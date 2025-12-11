@@ -1,19 +1,37 @@
 version: "3.1"
 
 services:
+  frontend:
+    image: nginx:alpine
+    restart: always
+    ports:
+      - "8080:80"
+    volumes:
+      - ./frontend:/usr/share/nginx/html:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    depends_on:
+      - api
+
   db:
-    image: postgres
+    image: postgres:15-alpine
     restart: always
     environment:
+      - POSTGRES_DB=mydb
+      - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
     volumes:
       - ./sqlfiles:/docker-entrypoint-initdb.d
+      - postgres_data:/var/lib/postgresql/data
 
   adminer:
     image: adminer
     restart: always
     ports:
-      - 8080:8080
+      - 8081:8080
     depends_on:
       - db
 
@@ -33,3 +51,6 @@ services:
     depends_on:
       - db
     command: uvicorn main:app --proxy-headers --host 0.0.0.0 --port 8000
+
+volumes:
+  postgres_data:
