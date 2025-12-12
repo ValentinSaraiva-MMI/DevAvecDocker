@@ -31,3 +31,13 @@ async def get_users():
     print("Nombre d'utilisateurs trouvés :", cursor.rowcount)
     cursor.close()
     return { "utilisateurs": records }
+
+@app.get("/students")
+async def get_students():
+    cursor = conn.cursor()
+    sql_select_query = "SELECT * FROM students"
+    cursor.execute(sql_select_query)
+    records = cursor.fetchall()
+    print("Nombre d'étudiants trouvés :", cursor.rowcount)
+    cursor.close()
+    return { "étudiants": records }

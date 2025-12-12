@@ -48,7 +48,7 @@
 
             try {
                 // Appel à l'API Python
-                const response = await fetch(`${API_URL}/`);
+                const response = await fetch(`${API_URL}/students`);
                 
                 if (!response.ok) {
                     throw new Error(`Erreur HTTP: ${response.status}`);

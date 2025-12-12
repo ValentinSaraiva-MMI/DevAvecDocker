@@ -3,8 +3,8 @@ CREATE TABLE IF NOT EXISTS students (
     nom VARCHAR(100),
     prenom VARCHAR(100),
     email VARCHAR(255),
-    classe VARCHAR(50)
+    promo VARCHAR(50)
 );
 
-INSERT INTO students (nom, prenom, email, classe)
+INSERT INTO students (nom, prenom, email, promo)
 VALUES ('Alice', 'Smith', 'alice@example.com', 'M2 Info');
