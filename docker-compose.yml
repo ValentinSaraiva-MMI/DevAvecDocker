@@ -8,11 +8,6 @@ services:
       - "8080:80"
     volumes:
       - ./frontend:/usr/share/nginx/html:ro
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres"]
-      interval: 5s
-      timeout: 5s
-      retries: 5
     depends_on:
       - api
 
@@ -26,6 +21,17 @@ services:
     volumes:
       - ./sqlfiles:/docker-entrypoint-initdb.d
       - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:alpine
+    restart: always
+    volumes:
+      - redis_data:/data
 
   adminer:
     image: adminer
@@ -48,9 +54,12 @@ services:
     environment:
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
       - POSTGRES_HOST=db
+      - REDIS_HOST=redis
     depends_on:
       - db
+      - redis
     command: uvicorn main:app --proxy-headers --host 0.0.0.0 --port 8000
 
 volumes:
   postgres_data:
+  redis_data:
