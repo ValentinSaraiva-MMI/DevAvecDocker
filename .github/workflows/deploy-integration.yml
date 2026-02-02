@@ -32,7 +32,7 @@ jobs:
       - name: Start Stack with GHCR Image
         env:
           # On construit l'URL complète de l'image
-          API_IMAGE: ghcr.io/${{ github.repository }}/python-api:latest
+          API_IMAGE: ghcr.io/valentinsaraiva-mmi/devavecdocker/python-api:latest
         run: |
           echo "Démarrage avec l'image : $API_IMAGE"
           docker compose up -d
