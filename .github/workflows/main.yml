@@ -1,0 +1,19 @@
+name: Test 2 publish Docker Images
+on:
+  push:
+    branches: [ "main" ]
+
+jobs: 
+  build_test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - run: |
+          docker build ./api -t my-api-test
+          docker run -d --name api-container -p 8000:8000 my-api-test
+          sleep 5
+          docker ps
+          docker logs api-container 2>&1 | grep "Application startup complete"
+        
+
+#python redis postgres ngin
