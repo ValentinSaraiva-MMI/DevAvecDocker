@@ -1,0 +1,33 @@
+name: Security Scan
+
+on:
+  workflow_run:
+    workflows: ["Build and Test Python"] # Doit correspondre exactement au 'name:' du fichier 1
+    types:
+      - completed
+
+jobs:
+  trivy_scan:
+    # Condition de succès du workflow précédent (Obligatoire selon le TP)
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    runs-on: ubuntu-latest
+
+    strategy:
+      fail-fast: false # Si une image échoue, on continue quand même de scanner les autres
+      matrix:
+        image: ["nginx:alpine", "postgres:15-alpine", "redis:alpine"]
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Run Trivy vulnerability scanner on ${{ matrix.image }}
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: ${{ matrix.image }}
+          format: "table"
+          # Le TP demande d'échouer si CRITICAL est détecté
+          exit-code: "1"
+          ignore-unfixed: true
+          vuln-type: "os,library"
+          severity: "CRITICAL"

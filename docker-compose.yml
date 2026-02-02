@@ -42,7 +42,7 @@ services:
       - db
 
   api:
-    image: python-api
+    image: ${API_IMAGE:-python-api}
     build:
       context: ./api
       dockerfile: Dockerfile

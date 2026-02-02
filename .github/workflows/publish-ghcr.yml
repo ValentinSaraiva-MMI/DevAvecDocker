@@ -1,0 +1,57 @@
+name: Publish to GHCR
+
+on:
+  workflow_run:
+    workflows: ["Security Scan"] # Doit correspondre exactement au nom du fichier 2
+    types:
+      - completed
+
+env:
+  REGISTRY: ghcr.io
+  # Nom de l'image (doit correspondre à celle qu'on a définie avant : python-api)
+  IMAGE_NAME: ${{ github.repository }}/python-api
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    # Condition de succès obligatoire [cite: 53]
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      # 1. Checkout du code spécifique au commit d'origine
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.workflow_run.head_sha }}
+
+      # 2. Authentification [cite: 37]
+      - name: Log in to the Container registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      # 3. Extraction des métadonnées (Tags & Labels)
+      # Cette étape génère automatiquement les tags (latest, sha-xyz...)
+      - name: Extract metadata (tags, labels) for Docker
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          tags: |
+            type=raw,value=latest
+            type=sha
+
+      # 4. Build et Push avec les métadonnées [cite: 38]
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: ./api # IMPORTANT : Ton dossier api
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
