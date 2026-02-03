@@ -10,29 +10,26 @@ jobs:
   build_test:
     runs-on: ubuntu-latest
 
-    # Pas besoin de permissions 'packages: write' ici car on ne fait pas de push !
-
     steps:
-      # 1. Checkout du code [cite: 17]
+      # 1. Checkout du code
       - name: Checkout code
         uses: actions/checkout@v4
 
-      # 2. Build manuel de l'image (SANS PUSH)
+      # 2. Build manuel de l'image
       - name: Build Docker Image
         run: docker build -t my-api-test ./api
 
-      # 3. Lancement du conteneur en mode détaché [cite: 19]
+      # 3. Lancement du conteneur en mode détaché
       - name: Run Container
         run: |
           docker run -d --name api-container -p 8000:8000 my-api-test
           sleep 5 # On laisse le temps à Uvicorn de démarrer
 
-      # 4. Lecture des logs sur un pattern [cite: 20]
+      # 4. Lecture des logs sur un pattern
       - name: Check Logs
         run: docker logs api-container 2>&1 | grep "Application startup complete"
 
-      # 5. Smoke Test (Curl)
-      # Le TP demande explicitement de vérifier qu'il répond à une requête HTTP
+      # 5. Smoke Test
       - name: Smoke Test with Curl
         run: |
           echo "Testing endpoint..."

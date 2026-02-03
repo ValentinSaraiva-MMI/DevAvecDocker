@@ -26,7 +26,7 @@ jobs:
         with:
           image-ref: ${{ matrix.image }}
           format: "table"
-          # Le TP demande d'échouer si CRITICAL est détecté
+          # Echouer si CRITICAL est détecté
           exit-code: "1"
           ignore-unfixed: true
           vuln-type: "os,library"

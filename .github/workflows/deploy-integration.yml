@@ -2,18 +2,18 @@ name: Deploy Integration
 
 on:
   workflow_run:
-    workflows: ["Publish to GHCR"] # Doit correspondre exactement au fichier 3
+    workflows: ["Publish to GHCR"]
     types:
       - completed
 
 jobs:
   integration_test:
     runs-on: ubuntu-latest
-    # Condition de succès du workflow précédent [cite: 53]
+    # Condition de succès du workflow précédent
     if: ${{ github.event.workflow_run.conclusion == 'success' }}
 
     steps:
-      # 1. Récupération du code (nécessaire pour avoir le docker-compose.yml) [cite: 46]
+      # 1. Récupération du code (nécessaire pour avoir le docker-compose.yml)
       - name: Checkout code
         uses: actions/checkout@v4
         with:
@@ -27,28 +27,29 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      # 3. Démarrage de la stack [cite: 47]
-      # ON INJECTE la variable pour forcer l'usage de l'image du registre [cite: 49, 54]
+      # 3. Démarrage de la stack
       - name: Start Stack with GHCR Image
         env:
           # On construit l'URL complète de l'image
           API_IMAGE: ghcr.io/valentinsaraiva-mmi/devavecdocker/python-api:latest
+          POSTGRES_DB: mydb
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: ynovpwd
+
         run: |
           echo "Démarrage avec l'image : $API_IMAGE"
           docker compose up -d
 
-      # 4. Attente (car Postgres et Nginx mettent du temps à s'initialiser)
       - name: Wait for services
         run: sleep 10
 
-      # 5. Vérification que Nginx proxy bien vers Python [cite: 50]
-      # Ton Nginx écoute sur 8080. Si ça répond, c'est que la chaîne complète fonctionne.
+      # 4. Vérification que Nginx proxy bien vers Python
       - name: Verify Nginx Proxy
         run: |
           docker compose ps
           curl -f http://localhost:8080/docs || (docker compose logs && exit 1)
 
-      # Nettoyage
+      # 5.Nettoyage
       - name: Cleanup
         if: always()
         run: docker compose down
