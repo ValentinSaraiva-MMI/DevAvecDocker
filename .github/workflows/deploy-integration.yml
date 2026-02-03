@@ -41,13 +41,15 @@ jobs:
           docker compose up -d
 
       - name: Wait for services
-        run: sleep 10
+        run: |
+          sleep 10
+          docker ps
 
       # 4. Vérification que Nginx proxy bien vers Python
       - name: Verify Nginx Proxy
         run: |
           docker compose ps
-          curl -f http://localhost:8080/docs || (docker compose logs && exit 1)
+          curl -f http://localhost:8080/ || (docker compose logs && exit 1)
 
       # 5.Nettoyage
       - name: Cleanup
