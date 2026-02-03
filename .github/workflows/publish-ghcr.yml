@@ -8,13 +8,13 @@ on:
 
 env:
   REGISTRY: ghcr.io
-  # Nom de l'image (doit correspondre à celle qu'on a définie avant : python-api)
+  # Nom de l'image (doit correspondre à celle qu'on a définie 
   IMAGE_NAME: ${{ github.repository }}/python-api
 
 jobs:
   publish:
     runs-on: ubuntu-latest
-    # Condition de succès obligatoire [cite: 53]
+    # Condition de succès obligatoire  
     if: ${{ github.event.workflow_run.conclusion == 'success' }}
 
     permissions:
@@ -28,7 +28,7 @@ jobs:
         with:
           ref: ${{ github.event.workflow_run.head_sha }}
 
-      # 2. Authentification [cite: 37]
+      # 2. Authentification 
       - name: Log in to the Container registry
         uses: docker/login-action@v3
         with:
@@ -47,7 +47,7 @@ jobs:
             type=raw,value=latest
             type=sha
 
-      # 4. Build et Push avec les métadonnées [cite: 38]
+      # 4. Build et Push avec les métadonnées [ 
       - name: Build and push Docker image
         uses: docker/build-push-action@v5
         with:

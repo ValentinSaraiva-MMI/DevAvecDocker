@@ -30,8 +30,8 @@ jobs:
       # 3. Démarrage de la stack
       - name: Start Stack with GHCR Image
         env:
-          # On construit l'URL complète de l'image
-          API_IMAGE: ghcr.io/valentinsaraiva-mmi/devavecdocker/python-api:latest
+          # ATTENTION : Mettre à jour avec le bon nom d'image
+          API_IMAGE: ghcr.io/valentinsaraiva-mmi/devavecdocker/python-api:latest 
           POSTGRES_DB: mydb
           POSTGRES_USER: postgres
           POSTGRES_PASSWORD: ynovpwd
