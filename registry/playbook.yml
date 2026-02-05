@@ -47,6 +47,7 @@
         owner: ubuntu
         group: ubuntu
         mode: 0640
+        crypt_scheme: bcrypt
 
     # 4. Docker Compose (Templated)
     # On utilise 'template' au lieu de 'copy' pour que la variable {{ public_ip }}
@@ -59,8 +60,13 @@
         group: ubuntu
         mode: "0644"
 
+    - name: Stop stack
+      command: docker compose stop
+      args:
+        chdir: "{{ project_dir }}"
+
     # 5. Start
     - name: Démarrage de la stack
-      command: docker compose up -d
+      command: docker compose up --force-recreate -d
       args:
         chdir: "{{ project_dir }}"
