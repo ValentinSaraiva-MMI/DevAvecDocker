@@ -1,0 +1,53 @@
+name: Zero Touch Deploy
+
+on:
+  workflow_dispatch: # Déclenchement manuel
+
+jobs:
+  deploy-infra-and-app:
+    runs_on: ubuntu-latest
+    env:
+      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      AWS_REGION: "eu-west-3"
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      # --- PHASE 1 : TERRAFORM ---
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v2
+
+      - name: Terraform Init
+        working_directory: ./infra
+        run: terraform init
+
+      - name: Terraform Apply
+        working_directory: ./infra
+        run: terraform apply -auto-approve
+
+      # --- PHASE 2 : BRIDGE (Récupération Secrets) ---
+      - name: Extract Terraform Outputs
+        id: extract_secrets
+        working_directory: ./infra
+        run: |
+          echo "SERVER_IP=$(terraform output -raw instance_ip)" >> $GITHUB_ENV
+          terraform output -raw ssh_private_key > ../ansible/id_rsa.pem
+          chmod 600 ../ansible/id_rsa.pem
+
+      # --- PHASE 3 : ANSIBLE ---
+      - name: Create Inventory
+        working_directory: ./ansible
+        run: |
+          echo "[registry_hosts]" > inventory.ini
+          echo "${{ env.SERVER_IP }} ansible_user=ubuntu ansible_ssh_private_key_file=id_rsa.pem ansible_ssh_common_args='-o StrictHostKeyChecking=no'" >> inventory.ini
+
+      - name: Run Ansible Playbook
+        working_directory: ./ansible
+        run: |
+          ansible-playbook -i inventory.ini playbook.yml \
+          --extra-vars "github_actor=${{ github.actor }} github_token=${{ secrets.GITHUB_TOKEN }}"
+
+      - name: Display URL
+        run: echo "🚀 Application accessible sur http://${{ env.SERVER_IP }}"

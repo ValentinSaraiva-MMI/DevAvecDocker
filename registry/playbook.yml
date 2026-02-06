@@ -1,11 +1,14 @@
 ---
-- name: Déploiement Registry Simple (HTTP)
+- name: Déploiement Zero touch
   hosts: registry_hosts
   become: true
   vars:
-    project_dir: "/home/ubuntu/registry-simple"
-    # L'IP publique est récupérée automatiquement pour la config de l'UI
+    project_dir: "/home/ubuntu/app"
     public_ip: "{{ ansible_host }}"
+
+    # Variables injectées par le pipeline GitHub
+    registry_user: "{{ github_actor }}"
+    registry_token: "{{ github_token }}"
 
   tasks:
     # 1. Installation Docker
@@ -15,9 +18,15 @@
         name:
           - docker.io
           - docker-compose-v2
-          - apache2-utils # pour htpasswd
+          - apache2-utils
           - python3-passlib
         state: present
+
+    - name: Connexion au registre GitHub (GHCR)
+      community.docker.docker_login:
+        registry_url: ghcr.io
+        username: "{{ registry_user }}"
+        password: "{{ registry_token }}"
 
     - name: Ajout user au groupe docker
       user:
@@ -50,8 +59,6 @@
         crypt_scheme: bcrypt
 
     # 4. Docker Compose (Templated)
-    # On utilise 'template' au lieu de 'copy' pour que la variable {{ public_ip }}
-    # soit remplacée par la vraie adresse IP lors du transfert.
     - name: Copie du docker-compose.yml
       template:
         src: docker-compose.yml

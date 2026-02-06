@@ -1,27 +1,28 @@
 services:
-  registry:
-    image: registry:2
+  api:
+    # ATTENTION : Si ton repo s'appelle autrement que "devavecdocker", modifie-le ici !
+    image: ghcr.io/{{ registry_user | lower }}/devavecdocker/python-api:latest
     restart: always
     ports:
-      - "5000:5000"
+      - "80:8000" # On map le port 80 (Web) vers le 8000 (API)
     environment:
-      REGISTRY_AUTH: htpasswd
-      REGISTRY_AUTH_HTPASSWD_REALM: Registry Realm
-      REGISTRY_AUTH_HTPASSWD_PATH: /auth/registry.password
-      REGISTRY_STORAGE_DELETE_ENABLED: "true"
-    volumes:
-      - ./data:/var/lib/registry
-      - ./auth:/auth:ro
-
-  ui:
-    image: joxit/docker-registry-ui:main
-    restart: always
-    ports:
-      - "80:80"
-    environment:
-      - REGISTRY_TITLE=Ansible Deployed Registry
-      - REGISTRY_URL=http://{{ public_ip }}:5000
-      - SINGLE_REGISTRY=true
-      - DELETE_IMAGES=true
+      - POSTGRES_DB=mydb
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=ynovpwd
+      - POSTGRES_HOST=db
+      - DATABASE_URL=postgresql://postgres:ynovpwd@db:5432/mydb
     depends_on:
-      - registry
+      - db
+
+  db:
+    image: postgres:15-alpine
+    restart: always
+    environment:
+      - POSTGRES_DB=mydb
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=ynovpwd
+    volumes:
+      - db_data:/var/lib/postgresql/data
+
+volumes:
+  db_data:

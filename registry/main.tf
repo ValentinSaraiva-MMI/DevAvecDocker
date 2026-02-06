@@ -98,3 +98,7 @@ resource "aws_instance" "registry_server" {
 output "instance_ip" {
   value = aws_instance.registry_server.public_ip
 }
+output "ssh_private_key" {
+  value     = tls_private_key.pk.private_key_pem
+  sensitive = true
+}
