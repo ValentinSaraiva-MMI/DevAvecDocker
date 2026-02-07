@@ -23,6 +23,7 @@ services:
       - POSTGRES_PASSWORD=ynovpwd
     volumes:
       - db_data:/var/lib/postgresql/data
+      - ./sqlfiles:/docker-entrypoint-initdb.d
 
 volumes:
   db_data:

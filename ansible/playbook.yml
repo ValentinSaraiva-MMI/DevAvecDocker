@@ -46,6 +46,15 @@
         - "{{ project_dir }}"
         - "{{ project_dir }}/auth"
         - "{{ project_dir }}/data"
+        - "{{ project_dir }}/sqlfiles"
+
+    - name: Copie du script d'initialisation SQL
+      copy:
+        src: sqlfiles/
+        dest: "{{ project_dir }}/sqlfiles/"
+        owner: ubuntu
+        group: ubuntu
+        mode: "0644"
 
     # 3. Auth (Mot de passe)
     - name: Génération mot de passe (admin/admin123)
